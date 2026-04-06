@@ -56,6 +56,7 @@ for item in dataset:
 H_plus= torch.stack(harmful_activations)
 H_minus= torch.stack(benign_activations)
 
+#Calculating the refusal direction
 
 print("Calculating refusal direction")
 
