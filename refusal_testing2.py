@@ -83,5 +83,5 @@ generate_with_intervention(test_prompt, blank_image, alpha=0.0)
 # Test 2: Alpha = 1.0 (Full ablation of the refusal vector)
 generate_with_intervention(test_prompt, blank_image, alpha=1.0)
 
-# Test 3: Alpha = 1.5 (Aggressive ablation, sometimes needed if safety signal is dispersed)
-generate_with_intervention(test_prompt, blank_image, alpha=2)
+# Test 3: Alpha = 10(out of distribution sampling happens)
+generate_with_intervention(test_prompt, blank_image, alpha=10)
