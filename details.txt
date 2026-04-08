@@ -1,2 +1,4 @@
 dataset created using gemini pro 3.1 
 dataset contains 50 harmful and benign prompts 
+
+the model used to judge is prometheus-7b
