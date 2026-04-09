@@ -46,7 +46,7 @@ def generation(prompt, image):
         # Decode the newly generated tokens
         input_length = inputs['input_ids'].shape[1]
         generated_text = processor.batch_decode(outputs.sequences[:, input_length:], skip_special_tokens=True)[0]
-        print("Generated:", generated_text)
+        
 
         # outputs.hidden_states is a tuple of tuples: (generated_token, layer)
         # We take the first generated token, last layer, last token in sequence
@@ -57,7 +57,7 @@ def generation(prompt, image):
     return generated_text, last_token_hidden
 
 #actual dataset loading
-with open("dataset.json", "r", encoding="utf-8") as f:
+with open("/opt/watchdog/users/arnav/vlm-safety/datasets/dataset.json", "r", encoding="utf-8") as f:
     dataset = json.loads(f.read().strip())
 
 harmful_generation_text = []
@@ -76,7 +76,7 @@ for item in dataset:
     benign_hidden_text.append(b_hidden)
 
 #actual dataset loading for 2
-with open("dataset2.json", "r", encoding="utf-8") as f:
+with open("/opt/watchdog/users/arnav/vlm-safety/datasets/dataset2.json", "r", encoding="utf-8") as f:
     dataset2 = json.loads(f.read().strip())
     
 harmful_generation_image = []
@@ -129,14 +129,14 @@ plt.savefig('pca_visualization.png')
 print("Saved PCA plot to pca_visualization.png")
 
 with open('generated_responses_hi.txt', 'w') as f:
-    f.write('\n'.join(harmful_generation_image))
+    json.dump(harmful_generation_image, f, indent=4)
 
 with open('generated_responses_ht.txt', 'w') as f:
-    f.write('\n'.join(harmful_generation_text))
+    json.dump(harmful_generation_text, f, indent=4)
 
 with open('generated_responses_bi.txt', 'w') as f:
-    f.write('\n'.join(benign_generation_image))
+    json.dump(benign_generation_image, f, indent=4)
 
 with open('generated_responses_bt.txt', 'w') as f:
-    f.write('\n'.join(benign_generation_text))
+    json.dump(benign_generation_text, f, indent=4)
 
