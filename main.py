@@ -6,7 +6,7 @@ from transformers import AutoProcessor, LlavaForConditionalGeneration
 
 model_id= "llava-hf/llava-1.5-7b-hf"
 device= 'cuda' if torch.cuda.is_available() else 'cpu'
-layer_to_probe= -1 # probing the final alyer 
+layer_to_probe= 5 # probing the final alyer 
 
 print (f'Loading{model_id} on {device}...')
 processor = AutoProcessor.from_pretrained(model_id)
@@ -79,7 +79,7 @@ print(f"Extraction complete. Refusal vector shape: {v_refusal.shape}")
 print(f"L2 Norm of vector: {torch.norm(v_refusal).item()}")
 
 # Save the vector for future steering/intervention experiments
-torch.save(v_refusal, "v_refusal_blank_image_layer_minus_1.pt")
+torch.save(v_refusal, "v_refusal_blank_image_layer_5.pt")
 print("Saved v_refusal tensor to disk.")
 
 

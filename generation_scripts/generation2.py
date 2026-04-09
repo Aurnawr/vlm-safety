@@ -45,7 +45,8 @@ def generation(prompt, image, layer=-1):
         
         # Decode the newly generated tokens
         input_length = inputs['input_ids'].shape[1]
-        generated_text = processor.batch_decode(outputs.sequences[:, input_length:], skip_special_tokens=True)[0]
+
+       # generated_text = processor.batch_decode(outputs.sequences[:, input_length:], skip_special_tokens=True)[0]
         
 
         # outputs.hidden_states is a tuple of tuples: (generated_token, layer)
@@ -54,24 +55,18 @@ def generation(prompt, image, layer=-1):
         layer_hidden_state = outputs.hidden_states[0][layer]
         last_token_hidden = layer_hidden_state[:, -1, :].squeeze(0).cpu().float().numpy()
         
-    return generated_text, last_token_hidden
+    return  last_token_hidden
 
 #actual dataset loading
 with open("/opt/watchdog/users/arnav/vlm-safety/datasets/dataset.json", "r", encoding="utf-8") as f:
     dataset = json.loads(f.read().strip())
 
-harmful_generation_text = []
-benign_generation_text = []
-harmful_hidden_text = []
-benign_hidden_text = []
 
 print("Processing dataset 1...")
 # Note: Since the prompt mentions "dataset1 and 2", I'm assuming dataset1 has blank image
 for item in dataset:
-    h_text, h_hidden = generation(item['harmful_prompt'], blank_image, layer=layer_to_probe)
-    b_text, b_hidden = generation(item['benign_prompt'], blank_image, layer=layer_to_probe)
-    harmful_generation_text.append(h_text)
-    benign_generation_text.append(b_text)
+    h_hidden = generation(item['harmful_prompt'], blank_image, layer=layer_to_probe)
+    b_hidden = generation(item['benign_prompt'], blank_image, layer=layer_to_probe)
     harmful_hidden_text.append(h_hidden)
     benign_hidden_text.append(b_hidden)
 
@@ -79,17 +74,15 @@ for item in dataset:
 with open("/opt/watchdog/users/arnav/vlm-safety/datasets/dataset2.json", "r", encoding="utf-8") as f:
     dataset2 = json.loads(f.read().strip())
     
-harmful_generation_image = []
-benign_generation_image = []
+
 harmful_hidden_image = []
 benign_hidden_image = []
 
 print("Processing dataset 2...")
 for item in dataset2:
-    h_text, h_hidden = generation(item['harmful_prompt'], blank_image, layer=layer_to_probe)
-    b_text, b_hidden = generation(item['benign_prompt'], blank_image, layer=layer_to_probe)
-    harmful_generation_image.append(h_text)
-    benign_generation_image.append(b_text)
+    h_hidden = generation(item['harmful_prompt'], blank_image, layer=layer_to_probe)
+    b_hidden = generation(item['benign_prompt'], blank_image, layer=layer_to_probe)
+ 
     harmful_hidden_image.append(h_hidden)
     benign_hidden_image.append(b_hidden)
 
@@ -128,16 +121,4 @@ plt.legend()
 plt.grid(True)
 plt.savefig(f'pca_visualization_layer_abs{abs(layer_to_probe)}.png')
 print(f"Saved PCA plot to pca_visualization_layer_abs{abs(layer_to_probe)}.png")
-
-with open('generated_responses_hi.txt', 'w') as f:
-    json.dump(harmful_generation_image, f, indent=4)
-
-with open('generated_responses_ht.txt', 'w') as f:
-    json.dump(harmful_generation_text, f, indent=4)
-
-with open('generated_responses_bi.txt', 'w') as f:
-    json.dump(benign_generation_image, f, indent=4)
-
-with open('generated_responses_bt.txt', 'w') as f:
-    json.dump(benign_generation_text, f, indent=4)
 
