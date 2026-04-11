@@ -14,7 +14,7 @@ model= LlavaForConditionalGeneration.from_pretrained(
     low_cpu_mem_usage=True
 ).to(device)
 
-v_refusal = torch.load('v_refusal_last_layer.pt').to(device).to(torch.float16)
+v_refusal = torch.load('/opt/watchdog/users/arnav/vlm-safety/v_refusal_blank_image_layer_5.pt').to(device).to(torch.float16)
 
 #defining the ablation hook 
 

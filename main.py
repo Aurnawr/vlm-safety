@@ -6,7 +6,7 @@ from transformers import AutoProcessor, LlavaForConditionalGeneration
 
 model_id= "llava-hf/llava-1.5-7b-hf"
 device= 'cuda' if torch.cuda.is_available() else 'cpu'
-layer_to_probe= 5 # probing the final alyer 
+layer_to_probe= 10 # probing the final alyer 
 
 print (f'Loading{model_id} on {device}...')
 processor = AutoProcessor.from_pretrained(model_id)
@@ -40,7 +40,7 @@ benign_activations= []
 
 import json
 
-with open("dataset.json", "r", encoding="utf-8") as f:
+with open("/opt/watchdog/users/arnav/vlm-safety/datasets/dataset.json", "r", encoding="utf-8") as f:
     content = f.read().strip()
 
 dataset = json.loads(content)
@@ -79,7 +79,7 @@ print(f"Extraction complete. Refusal vector shape: {v_refusal.shape}")
 print(f"L2 Norm of vector: {torch.norm(v_refusal).item()}")
 
 # Save the vector for future steering/intervention experiments
-torch.save(v_refusal, "v_refusal_blank_image_layer_5.pt")
+torch.save(v_refusal, "v_refusal_blank_image_layer_10.pt")
 print("Saved v_refusal tensor to disk.")
 
 

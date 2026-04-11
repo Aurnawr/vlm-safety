@@ -45,6 +45,7 @@ def generation(prompt, image, layer=-1):
         
         # Decode the newly generated tokens
         input_length = inputs['input_ids'].shape[1]
+
         generated_text = processor.batch_decode(outputs.sequences[:, input_length:], skip_special_tokens=True)[0]
         
 

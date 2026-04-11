@@ -2,3 +2,13 @@ dataset created using gemini pro 3.1
 dataset contains 50 harmful and benign prompts 
 
 the model used to judge is prometheus-7b
+
+Experiment 1: we check the effect of image agnostic vs image aware prompts on the hidden states of the last layer. We found that the image agnostic prompts hiden states have more variance and have a different distribution
+Also, the refusal direction computed with image agnostic prompts is not transferable to the image aware prompts.
+
+
+directions-- 1)see how middle layer hidden layers are affected and if we can extract a refusal direction from them.
+2) check if the refusal of image agnostic works on image aware and vice versa - activation steerring 
+3)compute dataset2 specific refusal direction
+4) try harmufl images+ benign prompt vs benign image + harmful prompt and check the pca plot
+Experiment 2: we try the same experiment with different middle layers 

@@ -1,2 +1,6 @@
 env
 v_refusal_last_layer.pt
+v_refusal_blank_image_layer_5.pt
+v_refusal_blank_image_layer_10.pt
+v_refusal_blank_image_layer_15.pt
+v_refusal_blank_image_layer_20.pt

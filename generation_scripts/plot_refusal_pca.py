@@ -14,14 +14,14 @@ n1 = len(dataset1)
 n2 = len(dataset2)
 
 # Load features from generation run
-all_features = np.load('all_features.npy')
+all_features = np.load('all_features_10.npy')
 
 # Fit PCA
 pca = PCA(n_components=2)
 reduced_features = pca.fit_transform(all_features)
 
 # Load the refusal vector and project it
-v_refusal = torch.load('/opt/watchdog/users/arnav/vlm-safety/v_refusal_last_layer.pt').cpu().float().numpy()
+v_refusal = torch.load('/opt/watchdog/users/arnav/vlm-safety/v_refusal_blank_image_layer_10.pt').cpu().float().numpy()
 # To get the direction in PCA space without the mean shift offset:
 # Project the vector itself onto the principal components
 v_refusal_pca = pca.transform(pca.mean_.reshape(1, -1) + v_refusal.reshape(1, -1))[0] - pca.transform(pca.mean_.reshape(1, -1))[0]
@@ -55,4 +55,4 @@ plt.ylabel('Principal Component 2')
 plt.legend()
 plt.grid(True)
 plt.savefig('pca_with_refusal_direction.png')
-print("Saved augmented PCA plot to pca_with_refusal_direction.png")
+print("Saved augmented PCA plot to pca_with_refusal_direction_layer10.png")
