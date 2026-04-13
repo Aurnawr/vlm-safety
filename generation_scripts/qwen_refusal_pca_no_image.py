@@ -1,6 +1,6 @@
 import torch
 import torch.nn.functional as F
-from transformers import LlavaForConditionalGeneration, AutoProcessor
+from transformers import AutoProcessor, Qwen2_5_VLForConditionalGeneration
 from PIL import Image
 import json
 import numpy as np
@@ -10,53 +10,55 @@ import os
 import argparse
 
 def main():
-    parser = argparse.ArgumentParser(description="Extract refusal direction PCA mapping across layers.")
-    parser.add_argument('--model_id', type=str, default='llava-hf/llava-1.5-7b-hf', help='HuggingFace model ID')
+    parser = argparse.ArgumentParser(description="Extract refusal direction PCA mapping across layers for Qwen VL.")
+    parser.add_argument('--model_id', type=str, default='Qwen/Qwen2.5-VL-7B-Instruct', help='HuggingFace model ID')
     args = parser.parse_args()
 
     model_id = args.model_id
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     print(f'Loading {model_id} on {device}...')
-    processor = AutoProcessor.from_pretrained(model_id)
     
-    # We use LlavaForConditionalGeneration for LLaVA variants (or AutoModelForVision2Seq if testing general VLMs)
-    # The outputs.hidden_states length will dynamically determine the number of layers.
-    try:
-        from transformers import AutoModelForVision2Seq
-        model = AutoModelForVision2Seq.from_pretrained(
-            model_id,
-            torch_dtype=torch.float16,
-            low_cpu_mem_usage=True
-        ).to(device)
-    except Exception:
-        # Fallback for LLaVA specifically if AutoModelForVision2Seq doesn't catch it
-        model = LlavaForConditionalGeneration.from_pretrained(
-            model_id,
-            torch_dtype=torch.float16,
-            low_cpu_mem_usage=True
-        ).to(device)
+    # Qwen2.5-VL requires AutoProcessor
+    processor = AutoProcessor.from_pretrained(model_id, trust_remote_code=True)
     
+    model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
+        model_id,
+        torch_dtype=torch.float16,
+        low_cpu_mem_usage=True,
+        device_map="auto"
+    )
+        
     model.eval()
 
     blank_image = Image.new('RGB', (224, 224), color='white')
 
     def get_all_hidden_states(prompt, image=None):
-        # We try to apply the default chat template or fallback to basic string formatting if missing
+        # Qwen2.5-VL requires chat templates for formatting structured prompt arrays natively
         if image is not None:
-            formatted_prompt = f"USER: <image>\n{prompt}\nASSISTANT:"
-            inputs = processor(text=formatted_prompt, images=image, return_tensors="pt")
+            messages = [
+                {"role": "user", "content": [
+                    {"type": "image"},
+                    {"type": "text", "text": prompt}
+                ]}
+            ]
+            text = processor.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+            inputs = processor(text=[text], images=[image], return_tensors="pt")
         else:
-            formatted_prompt = f"USER: {prompt}\nASSISTANT:"
-            # Some model processors crash if image is completely omitted when vision is expected but not provided
-            # Standard text-only generation might require specific inputs processing
-            inputs = processor(text=formatted_prompt, return_tensors="pt")
+            messages = [
+                {"role": "user", "content": [
+                    {"type": "text", "text": prompt}
+                ]}
+            ]
+            text = processor.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+            inputs = processor(text=[text], return_tensors="pt")
             
         for k, v in inputs.items():
-            if v.dtype == torch.float32:
-                inputs[k] = v.to(device, dtype=torch.float16)
-            else:
-                inputs[k] = v.to(device)
+            if isinstance(v, torch.Tensor):
+                if v.dtype == torch.float32:
+                    inputs[k] = v.to(model.device, dtype=torch.float16)  # Using model.dtype correctly
+                else:
+                    inputs[k] = v.to(model.device)
                 
         with torch.no_grad():
             outputs = model.generate(
@@ -66,9 +68,8 @@ def main():
                 output_hidden_states=True,
                 return_dict_in_generate=True
             )
+            
             # Dynamically determine number of layers produced by this model
-            # outputs.hidden_states has tuples containing the hidden states per token
-            # We look at the first generated token outputs.hidden_states[0]
             num_layers = len(outputs.hidden_states[0]) - 1 # excluding embedding layer
             
             hiddens = []

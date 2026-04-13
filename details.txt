@@ -11,4 +11,6 @@ directions-- 1)see how middle layer hidden layers are affected and if we can ext
 2) check if the refusal of image agnostic works on image aware and vice versa - activation steerring 
 3)compute dataset2 specific refusal direction
 4) try harmufl images+ benign prompt vs benign image + harmful prompt and check the pca plot
-Experiment 2: we try the same experiment with different middle layers 
+Experiment 2: we try the same experiment with different middle layers - done
+
+Experiment 3: we use the dataset 1 without images and dataset2 with images
